@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Proj1</string>
+    <string name="action_delete">Clear</string>
+    <string name="action_save">Save</string>
+
+
+</resources>

@@ -156,14 +156,14 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("MMM MM dd, yyyy h:mm a");
                 String dateString = sdf.format(date);
                 String  strBefore=String.valueOf(s.charAt(s.length()-1));
-                if(strBefore.equals(" ")){
-//                    String strAfter = s.toString().replace(" ", "/n");
-//                    strAfter = dateString;
-//                    textMessage.setText(textMessage.getText());
-                    textMessage.append(dateString);
-//                    textMessage.setSelection(s.length());
-                    textMessage.setSelection(textMessage.getText().length());
-                }
+//                if(strBefore.equals(" ")){
+////                    String strAfter = s.toString().replace(" ", "");
+////                    strAfter = dateString;
+////                    textMessage.setText(textMessage.getText());
+//                    textMessage.append(dateString);
+////                    textMessage.setSelection(s.length());
+//                    textMessage.setSelection(textMessage.getText().length());
+//                }
 //                if(s == "7"){
 //                    Toast.makeText(getApplicationContext(), "Maximum Limit Reached", Toast.LENGTH_SHORT).show();
 //                }
@@ -220,7 +220,8 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_delete:
                 //openFile(FILENAME);
-                textMessage.setText("");
+                textMessage.setText(" ");
+//                textMessage.getText().clear();
                 return true;
             case R.id.action_save:
                 saveFile(FILENAME);

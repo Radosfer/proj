@@ -18,6 +18,7 @@ import android.text.TextWatcher;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.view.KeyEvent;
+import  android.view.View.OnKeyListener;
 
 import android.widget.Toast;
 
@@ -52,6 +53,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -71,10 +74,16 @@ public class MainActivity extends AppCompatActivity {
     final String FILENAME = "code.txt";
 
     final String DIR_SD = "MyFiles";
-    final String FILENAME_SD = "code.txt";
+    final String FILENAME_SD = "code";
+    int index = 0;
+    Boolean state = true;
 
     Button buttonSend;
     EditText textTo;
+
+    Timer timer;
+    TimerTask mTimerTask;
+
     //EditText textSubject;
     EditText textMessage;
     /**
@@ -91,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
 //        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 //        fab.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -105,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
         // textSubject = (EditText) findViewById(R.id.editTextSubject);
         textMessage = (EditText) findViewById(R.id.editTextMessage);
 
+        timer = new Timer();
+        mTimerTask = new MyTimerTask();
+        timer.schedule(mTimerTask, 600000, 600000);
 //        textMessage.setOnEditorActionListener(new TextView.OnEditorActionListener(){
 //
 //            @Override
@@ -151,11 +164,19 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 long date = System.currentTimeMillis();
                 SimpleDateFormat sdf = new SimpleDateFormat("MMM MM dd, yyyy h:mm a");
                 String dateString = sdf.format(date);
                 String  strBefore=String.valueOf(s.charAt(s.length()-1));
+//                if((s.length() > 10)  && state){
+//                    state = false;
+//                    String cnt = String.valueOf(s.length());
+//                    textMessage.append(cnt);
+//                    textMessage.setSelection(s.length());
+////                    index = 0;
+//                }
                 if(strBefore.equals(" ")){
 //                    String strAfter = s.toString().replace(" ", "/n");
 //                    strAfter = dateString;
@@ -164,9 +185,29 @@ public class MainActivity extends AppCompatActivity {
 //                    textMessage.setSelection(s.length());
                     textMessage.setSelection(textMessage.getText().length());
                 }
+//                if(strBefore.equals(" ")) {
+//                    state = true;
+//                }
+
 //                if(s == "7"){
 //                    Toast.makeText(getApplicationContext(), "Maximum Limit Reached", Toast.LENGTH_SHORT).show();
 //                }
+            }
+        });
+
+        textMessage.setOnKeyListener(new OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                long date = System.currentTimeMillis();
+                SimpleDateFormat sdf = new SimpleDateFormat("MMM MM dd, yyyy h:mm a");
+                String dateString = sdf.format(date);
+                if( keyCode == KeyEvent.KEYCODE_ENTER ) {
+                    if( event.getAction() == KeyEvent.ACTION_UP ) {
+                        textMessage.append(dateString);
+                    }
+                    return true;
+                }
+                return false;
             }
         });
 
@@ -198,6 +239,36 @@ public class MainActivity extends AppCompatActivity {
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    class MyTimerTask extends TimerTask {
+        @Override
+        public void run() {
+
+            // Берем дату и время с системного календаря:
+//            Calendar calendar = Calendar.getInstance();
+//            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss a");
+
+            // Преобразуем информацию в строковые данные:
+//            final String strDate = simpleDateFormat.format(calendar.getTime());
+            runOnUiThread(new Runnable(){
+
+                // Отображаем информацию в текстовом поле count:
+                @Override
+                public void run() {
+//                    textMessage.append("1");
+                    saveFile(FILENAME);
+                }});
+        }
+    }
+
+    public void onDestroy() {
+        moveTaskToBack(true);
+
+        super.onDestroy();
+
+        System.runFinalizersOnExit(true);
+        System.exit(0);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -220,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_delete:
                 //openFile(FILENAME);
-                textMessage.setText("");
+                textMessage.setText(" ");
                 return true;
             case R.id.action_save:
                 saveFile(FILENAME);
@@ -323,14 +394,26 @@ public class MainActivity extends AppCompatActivity {
         // создаем каталог
         sdPath.mkdirs();
         // формируем объект File, который содержит путь к файлу
-        File sdFile = new File(sdPath, FILENAME_SD);
+        long date = System.currentTimeMillis();
+//        SimpleDateFormat sdf = new SimpleDateFormat("MMM MM dd, yyyy h:mm a");
+        SimpleDateFormat sdf = new SimpleDateFormat("d_MMM_yyyy__HH_mm_ss");
+        String dateString = sdf.format(date);
+
+        File sdFile = new File(sdPath, dateString + ".txt");
+
+
+
         try {
             // открываем поток для записи
             BufferedWriter bw = new BufferedWriter(new FileWriter(sdFile));
             // пишем данные
-            bw.write(text);
+
+
+            bw.write(dateString + "\n");
+            bw.append(text);
             // закрываем поток
             bw.close();
+            textMessage.setText(" ");
             Toast.makeText(this, "Сохранен в " + sdFile.getAbsolutePath(), Toast.LENGTH_SHORT).show();
             Log.d(LOG_TAG, "Файл записан на SD: " + sdFile.getAbsolutePath());
         } catch (IOException e) {
@@ -341,18 +424,18 @@ public class MainActivity extends AppCompatActivity {
 //        try {
 //            // отрываем поток для записи
 //            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-//                    openFileOutput(FILENAME, MODE_PRIVATE)));
+//                    openFileOutput(FILENAME, MODE_APPEND)));
 //            // пишем данные
 //            bw.write("Содержимое файла");
 //            // закрываем поток
 //            bw.close();
 //            Log.d(LOG_TAG, "Файл записан");
+//            Toast.makeText(this, "Сохранен", Toast.LENGTH_SHORT).show();
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-
 
     }
 }

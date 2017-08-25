@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                         textMessage.append(dateString);
                     }
                     return true;
+
                 }
                 return false;
             }
